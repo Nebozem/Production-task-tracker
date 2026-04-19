@@ -51,15 +51,17 @@ const DAY_MS = 24 * 60 * 60 * 1000
 
 const generateTagColor = (name: string): string => {
   const colors = [
-    '#ef4444', // red
-    '#f97316', // orange
-    '#eab308', // yellow
-    '#22c55e', // green
-    '#06b6d4', // cyan
-    '#3b82f6', // blue
-    '#8b5cf6', // violet
-    '#ec4899', // pink
-    '#6b7280', // gray
+    '#1f2937', // slate-800 (dark blue-gray)
+    '#991b1b', // red-900
+    '#7c2d12', // orange-900
+    '#78350f', // amber-900
+    '#15803d', // green-800
+    '#0f766e', // teal-800
+    '#0c4a6e', // sky-900
+    '#1e3a8a', // blue-900
+    '#4c1d95', // violet-900
+    '#831843', // rose-900
+    '#4b5563', // slate-700
   ]
   let hash = 0
   for (let i = 0; i < name.length; i++) {
@@ -910,7 +912,7 @@ function App() {
                       </>
                     ) : (
                       <>
-                        <span>{tag.name}</span>
+                        <span style={{ backgroundColor: tag.color, padding: '2px 4px', borderRadius: '4px', color: 'white' }}>{tag.name}</span>
                         <button type="button" onClick={() => { setEditingTagId(tag.id); setEditingTagName(tag.name) }}>✎</button>
                       </>
                     )}

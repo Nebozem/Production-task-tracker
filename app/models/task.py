@@ -90,6 +90,6 @@ class Tag(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(64), unique=True, index=True)
-    color: Mapped[str] = mapped_column(String(7), default="#6366f1")  # Default indigo color
+    color: Mapped[str] = mapped_column(String(7), default="#1f2937")  # Auto-generated dark color
 
     tasks = relationship("Task", secondary=task_tags, back_populates="tags")

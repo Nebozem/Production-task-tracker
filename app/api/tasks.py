@@ -83,6 +83,8 @@ def get_tasks(
     if deadline_to:
         query = query.filter(Task.deadline <= datetime.combine(deadline_to, time.max))
     tasks = query.order_by(Task.created_at.desc()).all()
+    if current_user.role == UserRole.employee:
+        tasks = [task for task in tasks if _task_has_access(task, current_user.id)]
     return [_to_task_read(task) for task in tasks]
 
 
@@ -108,6 +110,8 @@ def calendar_tasks(
         Task.starts_at <= window_end,
     )
     tasks = query.order_by(Task.starts_at.asc(), Task.deadline.asc()).all()
+    if current_user.role == UserRole.employee:
+        tasks = [task for task in tasks if _task_has_access(task, current_user.id)]
     return [_to_task_read(task) for task in tasks]
 
 

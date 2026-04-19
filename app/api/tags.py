@@ -12,16 +12,23 @@ router = APIRouter(prefix="/tags", tags=["tags"])
 
 
 def generate_tag_color(name: str) -> str:
+    """
+    Generate a deterministic dark color for a tag based on its name hash.
+    Uses a curated palette of dark colors that work well with white text.
+    Same tag name always gets the same color.
+    """
     colors = [
-        '#ef4444',  # red
-        '#f97316',  # orange
-        '#eab308',  # yellow
-        '#22c55e',  # green
-        '#06b6d4',  # cyan
-        '#3b82f6',  # blue
-        '#8b5cf6',  # violet
-        '#ec4899',  # pink
-        '#6b7280',  # gray
+        '#1f2937',  # slate-800 (dark blue-gray)
+        '#991b1b',  # red-900
+        '#7c2d12',  # orange-900
+        '#78350f',  # amber-900
+        '#15803d',  # green-800
+        '#0f766e',  # teal-800
+        '#0c4a6e',  # sky-900
+        '#1e3a8a',  # blue-900
+        '#4c1d95',  # violet-900
+        '#831843',  # rose-900
+        '#4b5563',  # slate-700
     ]
     hash_value = hash(name) % len(colors)
     return colors[hash_value]
@@ -52,10 +59,13 @@ def update_tag(tag_id: int, payload: TagUpdate, db: Annotated[Session, Depends(g
     tag = db.query(Tag).filter(Tag.id == tag_id).first()
     if not tag:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found")
-    duplicate = db.query(Tag).filter(Tag.name == payload.name.strip(), Tag.id != tag_id).first()
-    if duplicate:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Tag already exists")
-    tag.name = payload.name.strip()
+    if payload.name is not None:
+        duplicate = db.query(Tag).filter(Tag.name == payload.name.strip(), Tag.id != tag_id).first()
+        if duplicate:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Tag already exists")
+        tag.name = payload.name.strip()
+        # Regenerate color based on new name
+        tag.color = generate_tag_color(tag.name)
     db.commit()
     db.refresh(tag)
     return tag
