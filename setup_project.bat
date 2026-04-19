@@ -54,8 +54,8 @@ if errorlevel 1 (
     exit /b 1
 )
 
-pip install -q --upgrade pip
-pip install -q -r requirements.txt
+python -m pip install -q --upgrade pip
+python -m pip install -q -r requirements.txt
 if errorlevel 1 (
     color 0C
     echo ERROR: Failed to install Python dependencies.
