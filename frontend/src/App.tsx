@@ -69,6 +69,15 @@ const generateTagColor = (name: string): string => {
   }
   return colors[Math.abs(hash) % colors.length]
 }
+
+const getTextColorForBackground = (bgColorHex: string): string => {
+  const hex = bgColorHex.replace('#', '')
+  const r = parseInt(hex.substring(0, 2), 16)
+  const g = parseInt(hex.substring(2, 4), 16)
+  const b = parseInt(hex.substring(4, 6), 16)
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000
+  return brightness < 128 ? '#ffffff' : '#000000'
+}
 const VISIBLE_DAYS = 6
 const STATUS_LABELS: Record<Task['status'], string> = {
   todo: 'К выполнению',
@@ -130,8 +139,8 @@ function Field({
 function App() {
   const [auth, setAuth] = useState<AuthState | null>(null)
   const [me, setMe] = useState<CurrentUser | null>(null)
-  const [login, setLogin] = useState('admin')
-  const [password, setPassword] = useState('admin123')
+  const [login, setLogin] = useState('')
+  const [password, setPassword] = useState('')
   const [tasks, setTasks] = useState<Task[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [tags, setTags] = useState<Tag[]>([])
@@ -600,12 +609,16 @@ function App() {
                       <span>{formatDateTime(lane.task.starts_at)} {'->'} {formatDateTime(lane.task.deadline)}</span>
                       {lane.task.tags.length > 0 && (
                         <div className="timeline-tags">
-                          {lane.task.tags.slice(0, 3).map(tag => (
-                            <span key={tag.id} className="tag-chip" style={{ backgroundColor: tag.color || generateTagColor(tag.name), fontSize: '10px', padding: '2px 4px' }}>
-                              {tag.name}
-                            </span>
-                          ))}
-                          {lane.task.tags.length > 3 && <span className="tag-chip" style={{ backgroundColor: '#6b7280', fontSize: '10px', padding: '2px 4px' }}>+{lane.task.tags.length - 3}</span>}
+                          {lane.task.tags.slice(0, 3).map(tag => {
+                            const bgColor = tag.color || generateTagColor(tag.name)
+                            const textColor = getTextColorForBackground(bgColor)
+                            return (
+                              <span key={tag.id} className="tag-chip" style={{ backgroundColor: bgColor, color: textColor, fontSize: '10px', padding: '2px 4px' }}>
+                                {tag.name}
+                              </span>
+                            )
+                          })}
+                          {lane.task.tags.length > 3 && <span className="tag-chip" style={{ backgroundColor: '#6b7280', color: '#ffffff', fontSize: '10px', padding: '2px 4px' }}>+{lane.task.tags.length - 3}</span>}
                         </div>
                       )}
                     <small>{lane.task.assigned_user_logins.join(', ') || 'Исполнители не назначены'}</small>
@@ -635,11 +648,15 @@ function App() {
                 <p><b>Исполнители:</b> {selectedTask.assigned_user_logins.join(', ') || '-'}</p>
                 <p><b>Теги:</b> {selectedTask.tags.length > 0 ? (
                   <div className="tag-list">
-                    {selectedTask.tags.map(tag => (
-                      <span key={tag.id} className="tag-chip" style={{ backgroundColor: tag.color || generateTagColor(tag.name) }}>
-                        {tag.name}
-                      </span>
-                    ))}
+                    {selectedTask.tags.map(tag => {
+                      const bgColor = tag.color || generateTagColor(tag.name)
+                      const textColor = getTextColorForBackground(bgColor)
+                      return (
+                        <span key={tag.id} className="tag-chip" style={{ backgroundColor: bgColor, color: textColor }}>
+                          {tag.name}
+                        </span>
+                      )
+                    })}
                   </div>
                 ) : '-'}</p>
               </div>
@@ -723,21 +740,26 @@ function App() {
                     <div className="tag-list">
                       <span className="tag-list__label">Теги</span>
                       <div className="tag-list__items">
-                        {tags.map((tag) => (
-                          <button
-                            key={tag.id}
-                            type="button"
-                            className={`tag-chip ${editTaskTagNames.includes(tag.name) ? 'tag-chip--active' : ''}`}
-                            style={{ backgroundColor: editTaskTagNames.includes(tag.name) ? (tag.color || generateTagColor(tag.name)) : '#e5e7eb' }}
-                            onClick={() => setEditTaskTagNames((prev) => 
-                              prev.includes(tag.name) 
-                                ? prev.filter((name) => name !== tag.name) 
-                                : [...prev, tag.name]
-                            )}
-                          >
-                            {tag.name}
-                          </button>
-                        ))}
+                        {tags.map((tag) => {
+                          const isActive = editTaskTagNames.includes(tag.name)
+                          const bgColor = isActive ? (tag.color || generateTagColor(tag.name)) : '#e5e7eb'
+                          const textColor = isActive ? getTextColorForBackground(bgColor) : '#000000'
+                          return (
+                            <button
+                              key={tag.id}
+                              type="button"
+                              className={`tag-chip ${isActive ? 'tag-chip--active' : ''}`}
+                              style={{ backgroundColor: bgColor, color: textColor }}
+                              onClick={() => setEditTaskTagNames((prev) => 
+                                prev.includes(tag.name) 
+                                  ? prev.filter((name) => name !== tag.name) 
+                                  : [...prev, tag.name]
+                              )}
+                            >
+                              {tag.name}
+                            </button>
+                          )
+                        })}
                       </div>
                     </div>
                   )}
@@ -912,7 +934,7 @@ function App() {
                       </>
                     ) : (
                       <>
-                        <span style={{ backgroundColor: tag.color, padding: '2px 4px', borderRadius: '4px', color: 'white' }}>{tag.name}</span>
+                        <span style={{ backgroundColor: tag.color, padding: '2px 4px', borderRadius: '4px', color: getTextColorForBackground(tag.color) }}>{tag.name}</span>
                         <button type="button" onClick={() => { setEditingTagId(tag.id); setEditingTagName(tag.name) }}>✎</button>
                       </>
                     )}
