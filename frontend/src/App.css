@@ -57,7 +57,7 @@
   background: #f3f4f6;
 }
 
-..dashboard--single {
+.dashboard--single {
   grid-template-columns: 1fr;
 }
 
