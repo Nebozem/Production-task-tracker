@@ -1,144 +1,130 @@
 @echo off
-chcp 65001 > nul
 setlocal enabledelayedexpansion
 
 color 0A
 echo.
 echo ========================================
-echo 🚀 Инициализация проекта Task Manager
+echo Project initialization
 echo ========================================
 echo.
 
-REM Получаем директорию скрипта
 set PROJECT_DIR=%~dp0
 cd /d "%PROJECT_DIR%"
 
-REM Проверяем наличие Python
 python --version >nul 2>&1
 if errorlevel 1 (
     color 0C
-    echo ❌ ОШИБКА: Python не найден!
-    echo Пожалуйста, установите Python 3.11+ с python.org
-    echo https://www.python.org/downloads/
-    timeout /t 10
+    echo ERROR: Python not found.
+    echo Please install Python 3.11+ from https://www.python.org/downloads/
+    pause
     exit /b 1
 )
 
-REM Проверяем наличие Node.js
 node --version >nul 2>&1
 if errorlevel 1 (
     color 0C
-    echo ❌ ОШИБКА: Node.js не найден!
-    echo Пожалуйста, установите Node.js с https://nodejs.org/
-    timeout /t 10
+    echo ERROR: Node.js not found.
+    echo Please install Node.js from https://nodejs.org/
+    pause
     exit /b 1
 )
 
-echo ✓ Python: 
-python --version
-
-echo ✓ Node.js: 
-node --version
-
 echo.
-echo [1/5] Создание виртуального окружения Python...
+echo [1/5] Creating Python virtual environment...
 if exist .venv (
-    echo ✓ Виртуальное окружение уже существует
+    echo Virtual environment already exists.
 ) else (
     python -m venv .venv
     if errorlevel 1 (
         color 0C
-        echo ❌ ОШИБКА при создании виртуального окружения
-    echo.
-    pause
-    exit /b 1
-)
-    echo ✓ Виртуальное окружение создано
+        echo ERROR: Failed to create virtual environment.
+        pause
+        exit /b 1
+    )
+    echo Virtual environment created.
 )
 
 echo.
-echo [2/5] Активация виртуального окружения и установка зависимостей Python...
+echo [2/5] Activating virtual environment and installing Python dependencies...
 call .venv\Scripts\activate.bat
 if errorlevel 1 (
     color 0C
-    echo ❌ ОШИБКА при активации виртуального окружения
-    echo.
+    echo ERROR: Failed to activate virtual environment.
     pause
     exit /b 1
 )
 
-echo ✓ Установка Python зависимостей (это может занять 1-2 минуты)...
 pip install -q --upgrade pip
 pip install -q -r requirements.txt
 if errorlevel 1 (
     color 0C
-    echo ❌ ОШИБКА при установке зависимостей Python
-    echo.
+    echo ERROR: Failed to install Python dependencies.
     pause
+    exit /b 1
+)
 
 echo.
-echo [3/6] Установка Node.js зависимостей...
+echo [3/5] Installing Node.js dependencies...
 cd frontend
-echo ✓ Установка npm пакетов (это может занять 1-2 минуты)...
 call npm install -q
 if errorlevel 1 (
     color 0C
-    echo ❌ ОШИБКА при установке npm зависимостей
-    timeout /t 10
+    echo ERROR: Failed to install npm dependencies.
+    pause
     exit /b 1
 )
-echo ✓ npm зависимости установлены
+echo npm dependencies installed.
 
 echo.
-echo [4/6] Сборка фронтенда...
+echo [4/5] Building frontend...
 call npm run build
 if errorlevel 1 (
     color 0C
-    echo ❌ ОШИБКА при сборке фронтенда
-    timeout /t 10
+    echo ERROR: Failed to build frontend.
+    pause
     exit /b 1
 )
-echo ✓ Фронтенд собран
+echo Frontend build completed.
 cd ..
 
 echo.
-echo [5/6] Инициализация базы данных...
+echo [5/5] Initializing database...
 python -m alembic upgrade head
 if errorlevel 1 (
-    echo ⚠ Миграция БД может быть не нужна (это нормально)
+    echo WARNING: Database migration may not be needed.
 )
-echo ✓ База данных готова
+echo Database initialization complete.
 
 echo.
-echo [6/6] Проверка конфигурации...
+echo Checking .env configuration...
 if not exist .env (
     if exist .env.example (
         copy .env.example .env > nul
-        echo ✓ Файл .env создан из .env.example
+        echo .env created from .env.example
     ) else (
-        echo ✓ .env отсутствует, но .env.example тоже не найден
+        echo .env not found and .env.example also missing.
     )
 ) else (
-    echo ✓ Файл .env уже существует
+    echo .env already exists.
 )
-echo ✓ Конфигурация готова
+echo Configuration is ready.
 
 color 0B
 echo.
 echo ========================================
-echo ✅ ИНИЦИАЛИЗАЦИЯ ЗАВЕРШЕНА!
+echo Initialization completed successfully!
 echo ========================================
 echo.
-echo 📝 Следующий шаг:
-echo   Запустите: start_all.bat
+echo Next step:
+echo   Run start_all.bat
 echo.
-echo Проект будет доступен на:
+echo Project will be available at:
 echo   Frontend: http://localhost:5173
-echo   Backend:  http://localhost:8000
+echo   Backend: http://localhost:8000
 echo.
-echo Учётные данные админа:
-echo   Логин: admin
-echo   Пароль: admin123
+echo Admin credentials:
+echo   Login: admin
+echo   Password: admin123
 echo.
-echo Нажмите любую клавишу, чтобы закрыть окно...
+echo Press any key to exit...
 pause
