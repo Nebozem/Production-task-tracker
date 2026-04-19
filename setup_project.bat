@@ -49,9 +49,10 @@ if exist .venv (
     if errorlevel 1 (
         color 0C
         echo ❌ ОШИБКА при создании виртуального окружения
-        timeout /t 10
-        exit /b 1
-    )
+    echo.
+    pause
+    exit /b 1
+)
     echo ✓ Виртуальное окружение создано
 )
 
@@ -61,7 +62,8 @@ call .venv\Scripts\activate.bat
 if errorlevel 1 (
     color 0C
     echo ❌ ОШИБКА при активации виртуального окружения
-    timeout /t 10
+    echo.
+    pause
     exit /b 1
 )
 
@@ -71,10 +73,8 @@ pip install -q -r requirements.txt
 if errorlevel 1 (
     color 0C
     echo ❌ ОШИБКА при установке зависимостей Python
-    timeout /t 10
-    exit /b 1
-)
-echo ✓ Python зависимости установлены
+    echo.
+    pause
 
 echo.
 echo [3/6] Установка Node.js зависимостей...
@@ -140,4 +140,5 @@ echo Учётные данные админа:
 echo   Логин: admin
 echo   Пароль: admin123
 echo.
-timeout /t 10
+echo Нажмите любую клавишу, чтобы закрыть окно...
+pause
